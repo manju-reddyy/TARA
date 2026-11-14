@@ -1,0 +1,41 @@
+﻿TARA security test run
+Date: 2026-10-30 20:40:27 -05:00
+Python: Python 3.12.6
+Command: python tests\test_tara.py -v
+
+test_agent_cannot_call_tara_server_directly (__main__.TaraTest.test_agent_cannot_call_tara_server_directly) ... ok
+test_approval_requires_the_code_not_a_yes (__main__.TaraTest.test_approval_requires_the_code_not_a_yes) ... ok
+test_approved_grant_executes_once (__main__.TaraTest.test_approved_grant_executes_once) ... ok
+test_audit_chain_verifies (__main__.TaraTest.test_audit_chain_verifies) ... ok
+test_audit_deletion_is_detected (__main__.TaraTest.test_audit_deletion_is_detected) ... ok
+test_audit_tampering_is_detected (__main__.TaraTest.test_audit_tampering_is_detected) ... ok
+test_chained_command_is_not_treated_as_read_only (__main__.TaraTest.test_chained_command_is_not_treated_as_read_only) ... ok
+test_claude_settings_cannot_be_edited (__main__.TaraTest.test_claude_settings_cannot_be_edited) ... ok
+test_denied_request_issues_no_grant (__main__.TaraTest.test_denied_request_issues_no_grant) ... ok
+test_destructive_command_needs_approval (__main__.TaraTest.test_destructive_command_needs_approval) ... ok
+test_encoded_powershell_is_denied (__main__.TaraTest.test_encoded_powershell_is_denied) ... ok
+test_expired_grant_is_rejected (__main__.TaraTest.test_expired_grant_is_rejected) ... ok
+test_external_mcp_tool_needs_approval (__main__.TaraTest.test_external_mcp_tool_needs_approval) ... ok
+test_forged_grant_is_rejected (__main__.TaraTest.test_forged_grant_is_rejected) ... ok
+test_grant_cannot_be_used_for_a_different_action (__main__.TaraTest.test_grant_cannot_be_used_for_a_different_action) ... ok
+test_grant_cannot_be_used_from_another_session (__main__.TaraTest.test_grant_cannot_be_used_from_another_session) ... ok
+test_grant_from_another_tara_instance_is_rejected (__main__.TaraTest.test_grant_from_another_tara_instance_is_rejected) ... ok
+test_grant_replay_is_rejected (__main__.TaraTest.test_grant_replay_is_rejected) ... ok
+test_hook_denies_when_tara_is_down (__main__.TaraTest.test_hook_denies_when_tara_is_down) ... ok
+test_injected_claim_of_approval_is_ignored (__main__.TaraTest.test_injected_claim_of_approval_is_ignored) ... ok
+test_network_send_needs_approval (__main__.TaraTest.test_network_send_needs_approval) ... ok
+test_read_is_allowed (__main__.TaraTest.test_read_is_allowed) ... ok
+test_read_only_shell_is_allowed (__main__.TaraTest.test_read_only_shell_is_allowed) ... ok
+test_relative_path_into_tara_is_denied (__main__.TaraTest.test_relative_path_into_tara_is_denied) ... ok
+test_shell_access_to_tara_is_denied (__main__.TaraTest.test_shell_access_to_tara_is_denied) ... ok
+test_tara_policy_cannot_be_edited (__main__.TaraTest.test_tara_policy_cannot_be_edited) ... ok
+test_tara_secrets_cannot_be_read (__main__.TaraTest.test_tara_secrets_cannot_be_read) ... ok
+test_unapproved_request_expires (__main__.TaraTest.test_unapproved_request_expires) ... ok
+test_unlisted_tool_defaults_to_approval (__main__.TaraTest.test_unlisted_tool_defaults_to_approval) ... ok
+test_voice_side_never_receives_codes (__main__.TaraTest.test_voice_side_never_receives_codes) ... ok
+test_write_inside_workspace_is_allowed (__main__.TaraTest.test_write_inside_workspace_is_allowed) ... ok
+test_write_outside_workspace_needs_approval (__main__.TaraTest.test_write_outside_workspace_needs_approval) ... ok
+test_wrong_codes_lock_the_request (__main__.TaraTest.test_wrong_codes_lock_the_request) ... ok
+----------------------------------------------------------------------
+Ran 33 tests in 2.523s
+OK

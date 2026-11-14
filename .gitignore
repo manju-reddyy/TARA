@@ -1,0 +1,37 @@
+# === Secrets (never commit) ===
+secrets/
+*.hex
+*token*.txt
+*key*.txt
+duress_code.txt
+test_code.txt
+xiaozhi_mcp_url.txt
+
+# === Runtime logs / state ===
+audit/
+*.jsonl
+*.jsonl.bak-*
+*.lock
+*.log
+state.json
+board.json
+
+# === Full browser profiles (cookies, sessions) ===
+browser-profile/
+youtube-player/
+
+# === Personal / machine-specific data ===
+calls/
+contacts.yaml
+comms-mcp.json
+claude-settings.json
+
+# === Private immigration petition (not for public repo) ===
+niw-petition/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/

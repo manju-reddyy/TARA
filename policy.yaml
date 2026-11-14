@@ -1,0 +1,289 @@
+# TARA authorization policy.
+#
+# Every tool call the laptop agent makes is checked against this file, in order:
+#   1. protected_paths / protected_shell_patterns  -> deny (approval cannot unlock)
+#   2. rules, first match wins                    -> allow | approve | deny | ai
+#   3. default                                    -> anything unlisted
+#
+# "approve" pauses the action until the human says the one-time code shown in
+#           the TARA window. The AI risk agent adds a risk level and a reason,
+#           but cannot remove the approval step.
+# "ai"      lets the AI risk agent (a separate Claude with no tools) decide
+#           allow / approve / deny in context. If it fails, the human decides.
+# The working agent's own words never count as approval.
+
+version: 1
+default: ai
+
+# The agent may never touch these: TARA itself, its secrets and audit log,
+# Claude Code's own settings/credentials (which configure the TARA hook), and keys.
+protected_paths:
+  - "~/tara/**"
+  - "~/xiaozhi-esp32-server/**"      # voice server: holds the Groq and Gemini API keys
+  - "~/tara-firmware-backup/**"
+  - "~/.claude/**"
+  - "~/.ssh/**"
+  - "~/.aws/**"
+
+# Regexes checked against shell commands (backslashes turned into "/").
+protected_shell_patterns:
+  - '(^|[/\s"''=])tara([/\s"'']|$)'       # TARA folder as a path component
+  - 'xiaozhi-esp32-server'
+  - 'tara-firmware-backup'
+  - '\.claude'
+  - '\.ssh'
+  - '\.aws'
+  - '(127\.0\.0\.1|localhost):8765'        # TARA server; the agent must not call it directly
+  - '-enc(odedcommand)?\b'                 # encoded PowerShell hides what it runs
+
+# --- How the human approves, by risk --------------------------------------------------------
+# confirm: a spoken "yes" (guards against accidents, not attacks); code: the one-time code from
+# the TARA window; two_person: two different approvers' codes.
+approval_levels:
+  low: code
+  medium: confirm
+  high: code
+  critical: two_person
+
+# --- Data labels: what the agent has read limits where things may go ------------------------
+# The PostToolUse hook reports what each tool returned; matching text labels the whole task.
+data_labels:
+  CUI: '(?i)\bCUI\b|controlled unclassified|distribution:? authorized'
+  PHI: '(?i)\b(medicare id|medical record number|\bMRN\b|patient record|date of birth|DOB:)'
+  SSN: '\b\d{3}-\d{2}-\d{4}\b'
+label_rules:            # once a task has read such data, sending anything out is...
+  CUI: deny
+  SSN: deny
+  PHI: two_person
+outbound_tools:         # tools that move data out of the laptop
+  - mcp__comms__whatsapp_send
+  - mcp__comms__whatsapp_call
+  - "mcp__claude_ai_Gmail__send_message"
+  - "mcp__claude_ai_Gmail__reply"
+  - "mcp__claude_ai_Gmail__forward"
+  - "mcp__claude_ai_Gmail__create_draft"
+  - "mcp__claude_ai_Gmail__update_draft"
+  - "mcp__claude_ai_Google_Drive__*"
+  - "mcp__claude_ai_Claude_Docs__*"
+  - WebFetch
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_type
+  - mcp__playwright__browser_fill_form
+# Content from these is untrusted (it may carry injected instructions). After reading it,
+# the tools below need a code even where the policy would allow them.
+untrusted_sources:
+  - WebFetch
+  - WebSearch
+  - "mcp__claude_ai_Firecrawl__*"
+  - "mcp__playwright__browser_snapshot"
+  - "mcp__claude_ai_Gmail__get_*"
+  - "mcp__claude_ai_Gmail__search_threads"
+  - mcp__comms__whatsapp_read
+  - Read
+untrusted_outbound_tools:
+  - "mcp__claude_ai_Gmail__create_draft"
+  - "mcp__claude_ai_Gmail__update_draft"
+  - "mcp__claude_ai_Google_Drive__*"
+  - "mcp__claude_ai_Claude_Docs__*"
+
+# --- Rate limits, even with approval --------------------------------------------------------
+# None set. The mechanism stays in TARA, but numbers must reflect a real need, not a guess.
+# To add one later, e.g.: {name: ..., tools: [...], max: N, per: minute|hour|day|week, over: deny}
+limits: []
+
+# --- Spending budgets: within the budget no code is needed; beyond it, a code is ------------
+budgets:
+  - name: weekly groceries
+    tools: [pay_groceries]          # a payments agent's tool name
+    limit: 100
+    per: week
+
+# --- Emergency override: for a short time, ONLY these actions skip approval -----------------
+# Everything is logged and shown on the laptop for review. Add your emergency contacts here.
+emergency:
+  minutes: 15
+  allow:
+    - tools: [mcp__comms__whatsapp_call, mcp__comms__whatsapp_send, talk_on_whatsapp]
+      to: [Ram]                     # emergency contact(s); reached without a code in an emergency
+
+rules:
+  # A payments agent's purchases: approve by default; the budget above lets small ones through.
+  - name: payments
+    tools: [pay_groceries, "pay_*"]
+    decision: approve
+    risk: high
+
+  # Anything that sends or shares on the user's behalf always needs the human.
+  - name: send email
+    tools: [mcp__claude_ai_Gmail__send_message, mcp__claude_ai_Gmail__reply, mcp__claude_ai_Gmail__forward]
+    decision: approve
+    risk: high
+
+  - name: send WhatsApp message
+    tools: [mcp__comms__whatsapp_send]
+    decision: approve
+    risk: high
+
+  # An AI voice speaks to someone for the user; one approval code covers the whole call.
+  - name: AI WhatsApp voice call
+    tools: [mcp__comms__whatsapp_call]
+    decision: approve
+    risk: high
+
+  # The user talks through the board; the laptop dials WhatsApp for them.
+  - name: WhatsApp call through the board
+    tools: [talk_on_whatsapp]
+    decision: approve
+    risk: high
+
+  - name: delete or junk email
+    tools: [mcp__claude_ai_Gmail__trash_*, mcp__claude_ai_Gmail__mark_*_spam, mcp__claude_ai_Gmail__delete_*]
+    decision: approve
+    risk: medium
+
+  # Reading mail is allowed: nothing the agent reads can send anything without
+  # the human. (Email text is still a prompt-injection channel; see the risk agent.)
+  - name: read email and contacts
+    tools: [mcp__claude_ai_Gmail__search_threads, mcp__claude_ai_Gmail__get_*, mcp__claude_ai_Gmail__list_*,
+            mcp__comms__contacts_lookup, mcp__comms__whatsapp_read]
+    decision: allow
+
+  - name: write email drafts
+    tools: [mcp__claude_ai_Gmail__create_draft, mcp__claude_ai_Gmail__update_draft]
+    decision: allow
+
+  - name: laptop music
+    tools: [play_song, play_video, stop_song, list_songs, play_computer_sound]
+    decision: allow
+
+  # Reminders and hands-free logs only speak to the user or write to ~/agent-workspace/logs.
+  # recall only reads back the local task history. All are read-only to the user's data or local.
+  - name: reminders and voice logs
+    tools: [set_reminder, cancel_reminders, log_event, read_log, recall]
+    decision: allow
+
+  - name: read files
+    tools: [Read, Glob, Grep, LS, NotebookRead]
+    decision: allow
+
+  - name: web search
+    tools: [WebSearch]
+    decision: allow
+
+  # A fetched URL can carry data out (https://site/?q=<secret>), so the risk agent checks it.
+  - name: fetch web page
+    tools: [WebFetch]
+    decision: ai
+
+  # Delegation is allowed because sub-agents' tool calls pass through the same
+  # hook: a sub-agent never gets more authority than its parent.
+  - name: planning and delegation
+    tools: [TodoWrite, Task, Agent, ToolSearch]
+    decision: allow
+
+  - name: write inside agent workspace
+    tools: [Write, Edit, MultiEdit, NotebookEdit]
+    paths: ["~/agent-workspace/**"]
+    decision: allow
+
+  - name: write outside agent workspace
+    tools: [Write, Edit, MultiEdit, NotebookEdit]
+    decision: approve
+    risk: high
+
+  # Shell commands not matched below are judged by the risk agent (default: ai).
+
+  - name: destructive shell command
+    tools: [Bash, PowerShell]
+    command_regex: '(?i)(\brm\b|\bdel\b|\brmdir\b|\brd\b|remove-item|\bformat\b|shutdown|restart-computer|stop-computer|reg\s+delete|diskpart|clear-content|set-content|out-file|>)'
+    decision: approve
+    risk: high
+
+  # Copying or moving files from the shell moves data just like the Write tool does, so it
+  # needs the human too (a cp of a controlled document to the Desktop must not slip through).
+  - name: copy or move files from shell
+    tools: [Bash, PowerShell]
+    command_regex: '(?i)(\bcp\b|\bmv\b|\bcopy\b|\bmove\b|\bxcopy\b|\brobocopy\b|copy-item|move-item|rename-item|new-item|\btee\b|\bscp\b|\brsync\b)'
+    decision: approve
+    risk: high
+
+  - name: network send from shell
+    tools: [Bash, PowerShell]
+    command_regex: '(?i)\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|scp|sftp|ssh|ftp|send-mailmessage|ncat|nc)\b'
+    decision: approve
+    risk: high
+
+  - name: dynamic code execution in shell
+    tools: [Bash, PowerShell]
+    command_regex: '(?i)(\biex\b|invoke-expression|\beval\b|start-process|\bpython\b.*-c|\bnode\b.*-e)'
+    decision: approve
+    risk: high
+
+  - name: read-only shell command
+    tools: [Bash, PowerShell]
+    command_regex: '(?i)^\s*(ls|dir|pwd|cat|type|get-childitem|gci|get-content|gc|get-date|date|whoami|hostname|echo|git\s+(status|log|diff|show))\b[^;&|>`$]*$'
+    decision: allow
+
+  # --- Browser (Playwright MCP, logged-in profile in ~/tara/browser-profile) ---------------
+  # Anything that commits you to something (reserve, book, pay, ...) always needs the human.
+  - name: browser commit click
+    tools: [mcp__playwright__browser_click]
+    input_regex: '(?i)\b(reserve|reservation|book|confirm|complete|submit|place (your )?order|pay|purchase|checkout|check out|buy|order now|sign up|subscribe|cancel|delete|remove|agree)\b'
+    decision: approve
+    risk: high
+
+  # Enter or "submit" can send a form without clicking its button, so it counts as a commit.
+  - name: browser submit by keyboard
+    tools: [mcp__playwright__browser_press_key, mcp__playwright__browser_type]
+    input_regex: '(?i)("key":"enter"|"submit":true)'
+    decision: approve
+    risk: high
+
+  # A page script that clicks, submits or sends data could book or buy, so it needs the human.
+  - name: browser script that acts
+    tools: [mcp__playwright__browser_evaluate, mcp__playwright__browser_run_code]
+    input_regex: '(?i)(\.click\s*\(|submit|dispatchEvent|fetch\s*\(|XMLHttpRequest|sendBeacon|\.(post|put|delete)\s*\(|location\s*=|\.goto\s*\(|press\s*\(|\.fill\s*\(|\.type\s*\()'
+    decision: approve
+    risk: high
+
+  # Other page scripts (usually just reading the page) are judged by the risk agent.
+  - name: browser script that reads
+    tools: [mcp__playwright__browser_evaluate, mcp__playwright__browser_run_code]
+    decision: ai
+
+  - name: browser file upload
+    tools: [mcp__playwright__browser_file_upload]
+    decision: approve
+    risk: high
+
+  - name: browser open booking and maps sites
+    tools: [mcp__playwright__browser_navigate]
+    input_regex: '"url":"https?://([a-z0-9-]+\.)*(opentable\.com|resy\.com|yelp\.com|google\.com|tripadvisor\.com)(/|")'
+    decision: allow
+
+  - name: browser open other sites
+    tools: [mcp__playwright__browser_navigate]
+    decision: ai
+
+  - name: browser look, fill in and navigate
+    tools: [mcp__playwright__browser_*]
+    decision: allow
+
+  # Putting files in the cloud or sharing them hands data to others: always the human.
+  - name: upload or share in the cloud
+    tools: ["mcp__claude_ai_Google_Drive__*create*", "mcp__claude_ai_Google_Drive__*upload*",
+            "mcp__claude_ai_Google_Drive__*copy*", "mcp__claude_ai_Google_Drive__*share*",
+            "mcp__claude_ai_Google_Drive__*update*", "mcp__claude_ai_Google_Drive__*permission*",
+            "mcp__claude_ai_Claude_Docs__*", "mcp__claude_ai_*__*share*"]
+    decision: approve
+    risk: high
+
+  # Other Claude account connectors (Calendar, Drive, Docs, ...): judged in context.
+  - name: other Claude connectors
+    tools: ["mcp__claude_ai_*"]
+    decision: ai
+
+  - name: tools from other MCP servers
+    tools: ["mcp__*"]
+    decision: approve
+    risk: medium
