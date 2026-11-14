@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1010 600" font-family="Segoe UI, Helvetica, Arial, sans-serif" role="img" aria-label="TARA architecture: an AI agent's tool call passes through an adapter to the TARA policy engine, which allows, denies, or requires a human one-time code before a protected tool can run; every decision is written to a signed audit log.">
+  <!-- white canvas so the diagram is legible in both light and dark themes -->
+  <rect x="0" y="0" width="1010" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#3b4252"/>
+    </marker>
+    <marker id="arrowDim" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#8a8f98"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="44" font-size="22" font-weight="700" fill="#1a1d23">TARA — AI-agent authorization</text>
+  <text x="40" y="68" font-size="13" fill="#6b7280">Every consequential action is gated: only an allowed action, or one a human approved with a one-time code, ever runs.</text>
+
+  <!-- AI Agent -->
+  <rect x="40" y="110" width="150" height="72" rx="8" fill="#eef2ff" stroke="#3b4252" stroke-width="1.5"/>
+  <text x="115" y="140" font-size="14" font-weight="700" fill="#1a1d23" text-anchor="middle">AI Agent</text>
+  <text x="115" y="160" font-size="11" fill="#4b5563" text-anchor="middle">(any framework)</text>
+
+  <!-- Adapter -->
+  <rect x="250" y="110" width="150" height="72" rx="8" fill="#eef2ff" stroke="#3b4252" stroke-width="1.5"/>
+  <text x="325" y="136" font-size="14" font-weight="700" fill="#1a1d23" text-anchor="middle">Adapter</text>
+  <text x="325" y="154" font-size="10.5" fill="#4b5563" text-anchor="middle">Claude Code hook</text>
+  <text x="325" y="169" font-size="10.5" fill="#9ca3af" text-anchor="middle">MCP, LangGraph…planned</text>
+
+  <!-- TARA engine (the gate) -->
+  <rect x="460" y="98" width="180" height="96" rx="10" fill="#fff7e6" stroke="#b7791f" stroke-width="2"/>
+  <text x="550" y="128" font-size="15" font-weight="700" fill="#7a4e00" text-anchor="middle">TARA</text>
+  <text x="550" y="148" font-size="11" fill="#7a4e00" text-anchor="middle">policy engine</text>
+  <text x="550" y="166" font-size="10" fill="#9a6a1a" text-anchor="middle">allow · deny · require</text>
+  <text x="550" y="180" font-size="10" fill="#9a6a1a" text-anchor="middle">approval</text>
+
+  <!-- arrows across the pipeline -->
+  <line x1="190" y1="146" x2="248" y2="146" stroke="#3b4252" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="219" y="138" font-size="9.5" fill="#6b7280" text-anchor="middle">tool call</text>
+  <line x1="400" y1="146" x2="458" y2="146" stroke="#3b4252" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="429" y="138" font-size="9.5" fill="#6b7280" text-anchor="middle">/authorize</text>
+
+  <!-- outcomes -->
+  <!-- ALLOW / APPROVED -> protected tool -->
+  <rect x="760" y="60" width="180" height="64" rx="8" fill="#e8f5e9" stroke="#2f7d32" stroke-width="1.6"/>
+  <text x="850" y="88" font-size="13" font-weight="700" fill="#1b5e20" text-anchor="middle">Protected tool runs</text>
+  <text x="850" y="106" font-size="10" fill="#2e7d32" text-anchor="middle">single-use grant, bound to this action</text>
+
+  <!-- DENY -> blocked -->
+  <rect x="760" y="150" width="180" height="56" rx="8" fill="#fdecea" stroke="#b71c1c" stroke-width="1.6"/>
+  <text x="850" y="174" font-size="13" font-weight="700" fill="#8e1414" text-anchor="middle">Blocked</text>
+  <text x="850" y="192" font-size="10" fill="#b71c1c" text-anchor="middle">no grant is ever issued</text>
+
+  <!-- NEEDS APPROVAL -> human one-time code -->
+  <rect x="700" y="258" width="240" height="84" rx="8" fill="#f3f0ff" stroke="#5b21b6" stroke-width="1.6"/>
+  <text x="820" y="284" font-size="13" font-weight="700" fill="#4c1d95" text-anchor="middle">Human one-time code</text>
+  <text x="820" y="302" font-size="10" fill="#5b21b6" text-anchor="middle">shown only in the TARA window</text>
+  <text x="820" y="318" font-size="10" fill="#5b21b6" text-anchor="middle">(voice / fingerprint / button — out of band)</text>
+  <text x="820" y="333" font-size="10" fill="#7c3aed" text-anchor="middle">the agent never sees it</text>
+
+  <!-- arrows from TARA to outcomes -->
+  <path d="M640 120 C 695 100, 720 92, 758 92" fill="none" stroke="#2f7d32" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="693" y="86" font-size="10" font-weight="700" fill="#2f7d32" text-anchor="middle">allow</text>
+
+  <path d="M640 152 C 690 160, 720 170, 758 174" fill="none" stroke="#b71c1c" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="693" y="166" font-size="10" font-weight="700" fill="#b71c1c" text-anchor="middle">deny</text>
+
+  <path d="M600 194 C 640 240, 670 270, 698 288" fill="none" stroke="#5b21b6" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="628" y="246" font-size="10" font-weight="700" fill="#5b21b6" text-anchor="middle">needs approval</text>
+
+  <!-- approval loops back: approved -> tool, denied/timeout -> blocked -->
+  <path d="M942 272 C 982 232, 982 150, 944 110" fill="none" stroke="#2f7d32" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="986" y="194" font-size="9.5" font-weight="700" fill="#2f7d32" text-anchor="middle" transform="rotate(90,986,194)">approved</text>
+
+  <path d="M795 258 L 795 210" fill="none" stroke="#b71c1c" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="865" y="230" font-size="9" fill="#b71c1c" text-anchor="middle">denied /</text>
+  <text x="865" y="241" font-size="9" fill="#b71c1c" text-anchor="middle">timeout</text>
+
+  <!-- AI risk agent (advisory) -->
+  <rect x="460" y="258" width="180" height="60" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <text x="550" y="282" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">AI risk agent</text>
+  <text x="550" y="299" font-size="9.5" fill="#64748b" text-anchor="middle">advisory only — never overrides</text>
+  <text x="550" y="312" font-size="9.5" fill="#64748b" text-anchor="middle">policy; failure ⇒ ask the human</text>
+  <path d="M550 258 L 550 196" fill="none" stroke="#8a8f98" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arrowDim)"/>
+
+  <!-- Signed audit log -->
+  <rect x="40" y="400" width="900" height="54" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.6"/>
+  <text x="60" y="424" font-size="13" font-weight="700" fill="#1a1d23">Signed, tamper-evident audit log</text>
+  <text x="60" y="443" font-size="10.5" fill="#475569">Every decision, approval and execution is appended and signed (Ed25519). Public key is served at /pubkey so anyone can verify the chain.</text>
+  <path d="M550 342 L 550 398" fill="none" stroke="#8a8f98" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arrowDim)"/>
+  <path d="M850 342 C 850 370, 760 384, 700 398" fill="none" stroke="#8a8f98" stroke-width="1.1" stroke-dasharray="4,3" marker-end="url(#arrowDim)"/>
+
+  <!-- fail-closed note -->
+  <text x="40" y="500" font-size="11.5" fill="#6b7280">Fails closed: if TARA is unreachable, frozen (kill switch), or anything errors, the action is denied. The agent's own words never count as approval.</text>
+  <text x="40" y="520" font-size="11.5" fill="#6b7280">Model-agnostic: the engine authorizes on (tool_name, tool_input); the "agent" is just a free-form label. Claude Code is the one shipped adapter today.</text>
+</svg>

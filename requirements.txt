@@ -1,0 +1,18 @@
+# TARA authorization core — runtime dependencies.
+# The engine (core.py), the server (server.py), and the full test suite need
+# only these two third-party packages. Everything else TARA uses is in the
+# Python standard library (http.server, hmac, hashlib, tkinter, ...).
+PyYAML>=6.0
+cryptography>=41.0
+
+# Notes:
+# - Python 3.10+ (developed and tested on CPython 3.12).
+# - The approval *window* (server.py) uses tkinter, which ships with the
+#   standard python.org installers on Windows and macOS. On Debian/Ubuntu
+#   Linux install it with:  sudo apt-get install python3-tk
+# - The optional AI risk agent (risk_agent.py) shells out to the `claude` CLI
+#   if it is on PATH; if it is not, TARA falls back to asking a human. No extra
+#   Python package is required for it.
+# - The experimental voice-approval subsystem has additional dependencies
+#   (numpy, websockets, opuslib, ...); it is NOT required for the authorization
+#   core, the demo, or the tests, and is intentionally not listed here.

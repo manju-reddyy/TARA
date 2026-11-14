@@ -1,0 +1,51 @@
+# Packaging configuration for TARA.
+#
+# STATUS: planned distribution. TARA is not yet published to PyPI. The modules
+# in tara/ currently import each other by bare name (the server and tests put
+# tara/ on sys.path), so a small restructuring into an importable package is
+# needed before `pip install tara-authz` works. This file pins the project
+# metadata and dependencies now; see ROADMAP.md ("PyPI distribution").
+#
+# Until then, install from source:  python -m pip install -r requirements.txt
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tara-authz"
+version = "0.1.0"
+description = "A model-agnostic authorization layer that gates an autonomous AI agent's consequential actions behind policy and out-of-band human approval."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Sai Manjunath Reddy Katha" }]
+keywords = [
+    "ai-agents", "authorization", "ai-safety", "security",
+    "prompt-injection", "human-in-the-loop", "guardrails", "llm",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+dependencies = [
+    "PyYAML>=6.0",
+    "cryptography>=41.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/manju-reddyy/tara"
+Repository = "https://github.com/manju-reddyy/tara"
+Issues = "https://github.com/manju-reddyy/tara/issues"
+
+# Tooling configuration (used by local dev once packaging lands).
+[tool.setuptools]
+# Package discovery will be finalized as part of the packaging work; see ROADMAP.
+py-modules = []
