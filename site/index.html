@@ -436,30 +436,57 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
   // Keyword-based (not an LLM): the mapped call is shown in the result, and the
   // REAL engine decides. Unmapped phrases ask the user to rephrase.
   var INTENTS = [
-    [/\b(buy|order|purchase|checkout|check ?out|place .*order|add to cart|amazon)\b/i,
-      "mcp__playwright__browser_click", {element: "Place your order button"}],
-    [/\b(wire|transfer)\b.*\b(money|funds|payment)\b|\bpay\b|\b(venmo|paypal|zelle)\b/i,
+    // money / payments
+    [/\b(transfer|wire|venmo|paypal|zelle)\b|\b(send|move|pay)\b[^]{0,20}(\$\s?\d|\d+\s*(dollars|usd|bucks)|\bmoney\b|\bfunds\b|\bpayment\b)|\bpay (for|the|my|back|him|her|them)\b/i,
       "pay_groceries", {amount: 200}],
-    [/\b(ssh|private key|\.aws|aws key|api key|secret|secrets|credential|password file)\b/i,
+    // shopping / orders
+    [/\b(buy|order|purchase|checkout|check ?out|place (an |the |my )?order|add to cart|amazon|reorder|order now)\b/i,
+      "mcp__playwright__browser_click", {element: "Place your order button"}],
+    // book / reserve
+    [/\b(book|reserve|reservation|rent a car|hail a (cab|ride|uber|lyft))\b|\b(book|schedule)\b.{0,16}\b(flight|hotel|table|ride|room|ticket)\b/i,
+      "mcp__playwright__browser_click", {element: "Confirm reservation"}],
+    // secrets / keys
+    [/\b(ssh|private key|\.aws|aws key|api key|access key|auth token|secret|secrets|credential|credentials|password file|\.env)\b/i,
       "Read", {file_path: "~/.ssh/id_rsa"}],
-    [/\b(send|write|compose|draft)\b.*\b(e-?mail|gmail)\b|\bemail\b.*\b(to|about|saying)\b/i,
+    // send email
+    [/\b(send|write|compose|draft|reply|forward|shoot)\b.{0,24}\b(e-?mail|gmail)\b|\bemail\b.{0,24}\b(to|about|saying|him|her|them)\b/i,
       "mcp__claude_ai_Gmail__send_message", {to: ["someone@example.com"], subject: "hi", body: "..."}],
-    [/\b(whatsapp|text message|send a message|send a text|dm)\b/i,
-      "mcp__comms__whatsapp_send", {to: "Ram", message: "hi"}],
-    [/\b(read|check)\b.*\b(e-?mail|inbox|gmail)\b/i,
+    // read email
+    [/\b(read|check|open|look at|go through|scan)\b.{0,16}\b(e-?mail|inbox|gmail|messages)\b/i,
       "mcp__claude_ai_Gmail__search_threads", {q: "invoice"}],
-    [/\b(delete|remove|wipe|erase|destroy)\b/i,
+    // messaging
+    [/\b(whatsapp|imessage|sms)\b|\b(send|shoot|fire off)\b[^]{0,16}\b(text|message|dm|whatsapp)\b|\btext\b\s+(my|a|to|him|her|them|someone|mom|dad|friend)\b/i,
+      "mcp__comms__whatsapp_send", {to: "Ram", message: "hi"}],
+    // delete
+    [/\b(delete|remove|wipe|erase|destroy|get rid of|clear out|purge|trash)\b/i,
       "Bash", {command: "rm -rf ~/Documents"}],
-    [/\b(fetch|scrape|download|grab)\b.*\b(url|page|site|http|web)\b/i,
+    // upload / share to cloud
+    [/\b(upload|share|sync|back ?up|publish)\b.{0,24}\b(drive|cloud|google drive|dropbox|file|folder|document|doc)\b/i,
+      "mcp__claude_ai_Google_Drive__create_file", {name: "report.pdf"}],
+    // calendar / scheduling
+    [/\b(schedule|create|set ?up|add|book)\b.{0,16}\b(meeting|event|calendar|appointment|invite|call)\b/i,
+      "mcp__claude_ai_Google_Calendar__create_event", {title: "Meeting"}],
+    // fetch / scrape
+    [/\b(fetch|scrape|download|grab|pull|crawl)\b.{0,24}\b(url|page|site|http|web|data|content)\b/i,
       "WebFetch", {url: "https://example.com"}],
-    [/\b(open|go to|visit|navigate|browse)\b.*\b(site|website|url|page|http|\.com)\b/i,
+    // open website
+    [/\b(open|go to|visit|navigate|browse|load|head to)\b.{0,24}\b(site|website|url|page|http|\.com|\.org|link)\b/i,
       "mcp__playwright__browser_navigate", {url: "https://example.com"}],
-    [/\b(search|google|look up)\b.*\b(web|google|online|internet)\b|\bsearch the web\b/i,
+    // web search
+    [/\b(search|google|look up|find|research)\b.{0,24}\b(web|google|online|internet|for|about)\b|\bsearch the web\b/i,
       "WebSearch", {query: "latest news"}],
-    [/\b(read|open|show|view|cat)\b.*\bfile\b/i,
+    // read file
+    [/\b(read|open|show|view|cat|print|display|load)\b.{0,16}\b(file|\.txt|\.csv|\.json|document|config|log)\b/i,
       "Read", {file_path: "~/agent-workspace/notes.txt"}],
-    [/\b(write|save|create|edit)\b.*\bfile\b/i,
-      "Write", {file_path: "~/agent-workspace/out.txt", content: "..."}]
+    // write / edit file
+    [/\b(write|save|create|edit|modify|update|append|overwrite)\b.{0,16}\b(file|\.txt|document|config|to disk)\b/i,
+      "Write", {file_path: "~/agent-workspace/out.txt", content: "..."}],
+    // run code / command
+    [/\b(run|execute|exec|launch|invoke)\b.{0,16}\b(command|script|code|program|python|shell|bash|binary)\b/i,
+      "Bash", {command: "python script.py"}],
+    // information lookups (a web search)
+    [/^\s*(what|who|when|where|how|why|is|are|does|can|should)\b|\b(weather|latest news|stock price|current price|look it up)\b/i,
+      "WebSearch", {query: "latest news"}]
   ];
   function looksLikeShell(t) {
     return /^\s*(sudo\s+)?(ls|pwd|cat|type|git|echo|whoami|hostname|date|rm|rmdir|del|cp|mv|copy|move|curl|wget|iwr|python|node|npm|pip|mkdir|chmod|chown|scp|ssh|tar|zip|grep|find)\b/i.test(t);
@@ -499,7 +526,7 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
 
   function esc(s) { return String(s).replace(/[&<>]/g, function (m) { return {"&":"&amp;","<":"&lt;",">":"&gt;"}[m]; }); }
 
-  function renderVerdict(tool, input, cwd, phrase) {
+  function renderVerdict(tool, input, cwd, phrase, unmapped) {
     var v = $("verdict");
     if (!pol) return;
     var r;
@@ -510,11 +537,12 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
     if (r.decision === "approve") next += " For this risk level, that's <b>" + esc(LEVELTEXT[pol.levelForRisk(r.risk)] || "a human approval") + "</b>.";
     var seen = '<p class="seen">' + (phrase ? "“" + esc(phrase) + "” &rarr; " : "") +
       'TARA sees <code>' + esc(tool) + '</code> <code>' + esc(JSON.stringify(input)) + '</code></p>';
+    var note = unmapped ? '<p class="hint" style="margin-top:12px">No rule matched this phrasing, so TARA treats it as an unrecognized action and applies its <b>safe default</b> below — it never silently allows the unknown. For a precise test, open “Exact tool call” and enter the real tool and arguments.</p>' : '';
     v.className = "verdict " + d.cls;
     v.innerHTML =
       '<div class="approval ' + d.ap + '"><span class="tag">Human approval</span><span class="val">' + d.apval + '</span></div>' +
       '<span class="badge"><span class="ic">' + d.ic + '</span>' + d.label + '</span>' +
-      seen +
+      seen + note +
       '<p class="next">' + next + '</p>' +
       '<div class="meta">' +
         '<span class="pill">rule&nbsp; <b>' + esc(r.rule) + '</b></span>' +
@@ -527,14 +555,13 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
     var v = $("verdict");
     var text = $("nl").value;
     var m = mapIntent(text);
+    rerun = fromNL;
     if (!m) {
-      v.className = "verdict";
-      v.innerHTML = '<div class="approval" style="background:var(--surface-2);color:var(--muted)"><span class="tag">No match</span><span class="val">Couldn’t map that phrase</span></div>' +
-        '<p class="next">Try wording like <b>“place an Amazon order”</b>, <b>“send an email”</b>, <b>“delete my files”</b>, or a literal command like <code>rm -rf ~/x</code> — or open <b>Exact tool call</b> below to enter a precise tool and arguments.</p>';
+      $("tool").value = "custom_action"; $("args").value = JSON.stringify({description: text});
+      renderVerdict("custom_action", {description: text}, $("cwd").value.trim(), text, true);
       return;
     }
     $("tool").value = m.tool; $("args").value = JSON.stringify(m.input);
-    rerun = fromNL;
     renderVerdict(m.tool, m.input, $("cwd").value.trim(), text);
   }
 
