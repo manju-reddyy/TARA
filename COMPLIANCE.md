@@ -21,7 +21,7 @@ and records who did.
 |---|---|---|---|
 | GOVERN 1.1 / 1.2 — accountability & roles | Clear accountability for AI actions | Every action is attributed (agent, session, tool) and authorized by a named human role; tamper-evident audit | Met |
 | GOVERN 4.1 — risk culture, ability to supersede/stop | Mechanisms to override/disengage | **Kill switch** (freeze all, void grants); human **deny**; duress code | Met |
-| MANAGE 2.1 — human oversight of deployed AI | Human-in-the-loop on consequential actions | Approval by code; two-person for critical; spoken-yes for medium | Met |
+| MANAGE 2.1 — human oversight of deployed AI | Human-in-the-loop on consequential actions | Biometric approval (fingerprint) on a separate device; two-person (two different enrolled fingerprints) for critical; lighter confirm for medium | Met |
 | MANAGE 2.4 — ability to decommission/deactivate | Turn the system off safely | Kill switch; fail-closed hook (no TARA = deny) | Met |
 | MANAGE 4.1 — post-deployment monitoring | Track what the AI does | Append-only hash-chained audit log + approval receipts | Met |
 | MAP / MEASURE | Context & measurement of risk | Policy assigns a risk level per action; AI risk-agent adds context | Partial (no formal metrics yet) |
@@ -49,7 +49,7 @@ and records who did.
 | AU-2 / AU-3 / AU-12 | Audit events, content, generation | Every authorize/approve/deny/consume logged with who/what/when | Met |
 | AU-9 | Protection of Audit Information | Hash-chained, tamper-evident log; single-writer lock | Met |
 | AU-10 | Non-repudiation | HMAC-signed approval receipts | Met |
-| IA-2 / IA-5 | Identification & Authenticator Mgmt | One-time codes; duress code; (no CAC/PIV yet) | Partial |
+| IA-2 / IA-5 | Identification & Authenticator Mgmt | Biometric authenticator (fingerprint) + duress finger; one-time-code fallback; (no CAC/PIV yet) | Partial |
 | SI-10 | Information Input Validation | Untrusted-source gating; prompt-injection resistance (agent-read text cannot authorize) | Met |
 | IR-4 | Incident Handling | Duress code + kill switch + operator alerts | Partial |
 | SC-7 | Boundary Protection | Only the tunnel port is exposed; TARA server stays private | Partial |
