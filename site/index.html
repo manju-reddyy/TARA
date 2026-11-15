@@ -105,6 +105,14 @@
   .trace { margin-top: 14px; font-size: .82rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 12px; }
   .trace code { background: var(--surface-2); padding: 1px 6px; border-radius: 5px; color: var(--fg); }
   .warn { color: var(--deny); font-size: .85rem; margin-top: 10px; }
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+  .approval { display: flex; align-items: center; gap: 10px; font-size: .95rem; padding: 11px 15px; border-radius: 10px; margin-bottom: 15px; }
+  .approval .tag { font-family: var(--font-head); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; font-size: .72rem; }
+  .approval .val { font-weight: 600; }
+  .ap-yes { background: var(--approve-bg); color: var(--approve); }
+  .ap-no { background: var(--allow-bg); color: var(--allow); }
+  .ap-blocked { background: var(--deny-bg); color: var(--deny); }
+  .ap-ai { background: var(--ai-bg); color: var(--ai); }
 
   details.adv { margin-top: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px 16px; }
   details.adv summary { cursor: pointer; font-weight: 600; font-size: .9rem; padding: 12px 0; list-style: none; display: flex; align-items: center; gap: 8px; }
@@ -182,14 +190,28 @@
 
     <div class="pg">
       <div class="panel">
-        <h3>Your agent wants to…</h3>
+        <h3>Try an example</h3>
         <div class="chips" id="chips"></div>
+        <div class="divider"></div>
+        <h3>Or enter your own action</h3>
         <div class="field"><label for="tool">Tool</label>
-          <input id="tool" spellcheck="false" autocomplete="off" value="Bash"></div>
+          <input id="tool" list="toollist" spellcheck="false" autocomplete="off" value="Bash" placeholder="e.g. Bash, Read, mcp__claude_ai_Gmail__send_message">
+          <datalist id="toollist">
+            <option value="Read"></option><option value="Write"></option><option value="Edit"></option>
+            <option value="Bash"></option><option value="PowerShell"></option><option value="Glob"></option>
+            <option value="Grep"></option><option value="WebSearch"></option><option value="WebFetch"></option>
+            <option value="mcp__claude_ai_Gmail__send_message"></option>
+            <option value="mcp__claude_ai_Gmail__search_threads"></option>
+            <option value="mcp__claude_ai_Google_Drive__create_file"></option>
+            <option value="mcp__playwright__browser_navigate"></option>
+            <option value="mcp__playwright__browser_click"></option>
+            <option value="pay_groceries"></option>
+          </datalist></div>
         <div class="field"><label for="args">Arguments (JSON)</label>
           <textarea id="args" rows="4" spellcheck="false">{"command": "rm -rf ~/Documents"}</textarea></div>
         <div class="field"><label for="cwd">Working directory</label>
           <input id="cwd" spellcheck="false" autocomplete="off" value="~/agent-workspace"></div>
+        <button class="btn primary" id="evalBtn" type="button" style="margin-top:16px;width:100%;justify-content:center">Evaluate action</button>
       </div>
 
       <div class="verdict" id="verdict"><p class="sub" style="margin:0">Loading policy…</p></div>
@@ -414,13 +436,13 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
   }
 
   var DISPLAY = {
-    allow: { cls: "v-allow", ic: "✓", label: "Allowed",
+    allow: { cls: "v-allow", ic: "✓", label: "Allowed", ap: "ap-no", apval: "Not needed — the action runs",
       next: "The tool runs. Low-risk and within what the policy permits." },
-    deny: { cls: "v-deny", ic: "✕", label: "Denied",
+    deny: { cls: "v-deny", ic: "✕", label: "Denied", ap: "ap-blocked", apval: "N/A — blocked outright, never runs",
       next: "Blocked — no grant is ever issued, and human approval cannot unlock it." },
-    approve: { cls: "v-approve", ic: "◆", label: "Needs human approval",
+    approve: { cls: "v-approve", ic: "◆", label: "Needs human approval", ap: "ap-yes", apval: "Needed — biometric approval",
       next: "A human must approve out-of-band, with a biometric the agent never sees." },
-    ai: { cls: "v-ai", ic: "◇", label: "AI risk agent decides",
+    ai: { cls: "v-ai", ic: "◇", label: "AI risk agent decides", ap: "ap-ai", apval: "Decided by the AI risk agent",
       next: "Handed to the advisory AI risk agent, which judges it in context (allow / approve / deny). It can never unlock a protected resource or skip a required approval; if it's unavailable, a human decides." }
   };
   var LEVELTEXT = {
@@ -459,6 +481,7 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
     }
     v.className = "verdict " + d.cls;
     v.innerHTML =
+      '<div class="approval ' + d.ap + '"><span class="tag">Human approval</span><span class="val">' + d.apval + '</span></div>' +
       '<span class="badge"><span class="ic">' + d.ic + '</span>' + d.label + '</span>' +
       '<p class="next">' + next + '</p>' +
       '<div class="meta">' +
@@ -499,6 +522,7 @@ POST /consume  { "grant": "...", "tool_name": "...", "tool_input": {...} }  → 
   function init() {
     buildChips();
     ["tool", "args", "cwd"].forEach(function (id) { $(id).addEventListener("input", run); });
+    $("evalBtn").addEventListener("click", run);
     var pt = $("policy"); pt.value = DEFAULT_POLICY;
     pt.addEventListener("input", function () { loadPolicy(pt.value); });
     $("resetPolicy").addEventListener("click", function () { pt.value = DEFAULT_POLICY; loadPolicy(DEFAULT_POLICY); });
