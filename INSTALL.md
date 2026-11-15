@@ -62,7 +62,7 @@ OK
 
 ## 4. Run the authorization server
 
-The server listens on **`127.0.0.1:8765`** (loopback only) and opens a desktop **approval window** where one-time codes appear.
+The server listens on **`127.0.0.1:8765`** (loopback only) and opens a desktop **approval window** that shows each pending request. Primary approval is a **biometric (a fingerprint) on a separate approval device**; a one-time code in this window is available as a fallback.
 
 ```bash
 python tara/server.py
@@ -106,9 +106,9 @@ Add hooks to your Claude Code settings so each tool call is routed through TARA.
 }
 ```
 
-With the server running and the hooks in place, Claude Code will block on TARA for every tool call: allowed actions proceed, risky ones wait for a one-time code in the TARA window, and denied ones never execute.
+With the server running and the hooks in place, Claude Code will block on TARA for every tool call: allowed actions proceed, risky ones wait for a human **biometric approval** (a fingerprint on the TARA device; a one-time code in the window is a fallback), and denied ones never execute.
 
-> **Windows voice stack (optional).** `start_tara.ps1` launches the server together with an experimental voice-approval bridge. That path has additional, optional dependencies and machine-specific paths; it is not required to use TARA's authorization core.
+> **Windows hardware/voice bridge (optional).** `start_tara.ps1` launches the server together with the bridge to the hardware approval device and an optional voice/speaker component (which only adds friction — an unrecognized voice asks for more — and never grants approval). That path has additional, optional dependencies and machine-specific paths; it is not required to use TARA's authorization core.
 
 ## Troubleshooting
 

@@ -33,8 +33,8 @@ In scope: the authorization core (`tara/core.py`), the server (`tara/server.py`)
 Out of scope / expected behavior:
 
 - TARA **fails closed** by design: making it deny an action (e.g. by taking the server down) is not a vulnerability.
-- The experimental voice-approval subsystem is a prototype and not part of the hardened core.
-- The approval window and one-time codes assume a trusted local display; an attacker who already fully controls the user's desktop is outside the threat model.
+- The optional voice/speaker component only adds friction (an unrecognized voice asks for more) and is neither an approval path nor part of the hardened core.
+- The biometric approval device and the fallback one-time code assume a trusted local device and display; an attacker who already fully controls the user's desktop or that device is outside the threat model.
 
 ## Supported versions
 

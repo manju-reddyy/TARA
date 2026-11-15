@@ -46,7 +46,7 @@ The 213 scenarios exercise, among others:
 - **Policy evaluation** — allow / deny / approve decisions, first-match-wins rule ordering, and the default path.
 - **Protected resources** — TARA's own files, keys, audit log, and the agent's credentials cannot be read or written, including via relative paths and shell patterns; approval cannot unlock them.
 - **Grants** — single-use, bound to one exact action (tool + arguments) by hash, session-bound, time-limited; replays and cross-action reuse are rejected.
-- **Human approval** — one-time codes, wrong-code lockout, the spoken-yes (`confirm`) level, and two-person approval (two different codes / two different fingerprints) for critical actions.
+- **Human approval** — biometric (fingerprint) approval and its lockout after repeated failures, two-person approval (two *different* enrolled fingerprints) for critical actions, the lighter `confirm` level, and the one-time-code fallback.
 - **Prompt-injection resistance** — text in the action claiming prior approval, or instructing the reviewer, is ignored.
 - **Fail-closed behavior** — when TARA is down, frozen (kill switch), or returns an error, the hook denies.
 - **Data-aware escalation** — reading controlled (CUI), PHI, or SSN-shaped data escalates or denies later outbound actions.

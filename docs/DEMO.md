@@ -6,7 +6,9 @@ This page shows TARA making real decisions, with proof that **denied and unappro
 python examples/demo.py
 ```
 
-In the demo, *"TOOL RAN"* is true only when TARA produced a **usable single-use grant** — exactly the condition an adapter requires before it runs the tool. A hard deny never produces one; a pending request produces one only after a human enters the one-time code; and each grant works exactly once.
+In the demo, *"TOOL RAN"* is true only when TARA produced a **usable single-use grant** — exactly the condition an adapter requires before it runs the tool. A hard deny never produces one; a pending request produces one only after a human approves it; and each grant works exactly once.
+
+> **Note on approval method.** In a real deployment, a human approves on a separate device with a **biometric — a fingerprint** (two *different* enrolled fingerprints for critical, two-person actions). Because this demo runs **headless, with no approval hardware**, it exercises the equivalent **one-time-code** approval path (`approve_code`) to stand in for the fingerprint. The decision logic and the single-use-grant guarantees are identical either way.
 
 ## Captured output
 

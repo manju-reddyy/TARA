@@ -10,8 +10,8 @@ reaches 1.0.
 First public release of the working prototype.
 
 ### Added
-- **Authorization engine** (`tara/core.py`): policy evaluation with first-match-wins rules; hard-denied protected paths and shell patterns; single-use, action-bound, session-bound, time-limited grants; tiered human approval (one-time code / spoken confirm / two-person); data-aware escalation for CUI, PHI, and SSN-shaped data; append-only Ed25519-signed audit log; kill switch; and fail-closed behavior throughout.
-- **Local authorization server** (`tara/server.py`): loopback HTTP API (`/authorize`, `/wait`, `/consume`, `/observe`, and `GET /pubkey`) plus a desktop approval window that displays one-time codes.
+- **Authorization engine** (`tara/core.py`): policy evaluation with first-match-wins rules; hard-denied protected paths and shell patterns; single-use, action-bound, session-bound, time-limited grants; tiered biometric human approval (fingerprint; two-person via two different enrolled fingerprints; a lighter confirm for medium risk; one-time-code fallback); data-aware escalation for CUI, PHI, and SSN-shaped data; append-only Ed25519-signed audit log; kill switch; and fail-closed behavior throughout.
+- **Local authorization server** (`tara/server.py`): loopback HTTP API (`/authorize`, `/wait`, `/consume`, `/observe`, and `GET /pubkey`) plus a desktop approval window that shows each pending request (with a fallback one-time code).
 - **Claude Code adapter** (`tara/hook.py`): PreToolUse and PostToolUse hooks that route every tool call through TARA and fail closed if it is unreachable.
 - **Advisory AI risk agent** (`tara/risk_agent.py`): an optional, tool-less reviewer that can classify an action in context but never overrides policy or a required approval.
 - **Security test suite** (`tests/test_tara.py`): 213 passing attack/failure scenarios.

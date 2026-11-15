@@ -11,7 +11,7 @@
   </defs>
 
   <text x="40" y="44" font-size="22" font-weight="700" fill="#1a1d23">TARA — AI-agent authorization</text>
-  <text x="40" y="68" font-size="13" fill="#6b7280">Every consequential action is gated: only an allowed action, or one a human approved with a one-time code, ever runs.</text>
+  <text x="40" y="68" font-size="13" fill="#6b7280">Every consequential action is gated: only an allowed action, or one a human approved with a biometric, ever runs.</text>
 
   <!-- AI Agent -->
   <rect x="40" y="110" width="150" height="72" rx="8" fill="#eef2ff" stroke="#3b4252" stroke-width="1.5"/>
@@ -50,9 +50,9 @@
 
   <!-- NEEDS APPROVAL -> human one-time code -->
   <rect x="700" y="258" width="240" height="84" rx="8" fill="#f3f0ff" stroke="#5b21b6" stroke-width="1.6"/>
-  <text x="820" y="284" font-size="13" font-weight="700" fill="#4c1d95" text-anchor="middle">Human one-time code</text>
-  <text x="820" y="302" font-size="10" fill="#5b21b6" text-anchor="middle">shown only in the TARA window</text>
-  <text x="820" y="318" font-size="10" fill="#5b21b6" text-anchor="middle">(voice / fingerprint / button — out of band)</text>
+  <text x="820" y="284" font-size="13" font-weight="700" fill="#4c1d95" text-anchor="middle">Human biometric approval</text>
+  <text x="820" y="302" font-size="10" fill="#5b21b6" text-anchor="middle">fingerprint on a separate device (out of band)</text>
+  <text x="820" y="318" font-size="10" fill="#5b21b6" text-anchor="middle">iris / ear-placement / code — optional add-ons</text>
   <text x="820" y="333" font-size="10" fill="#7c3aed" text-anchor="middle">the agent never sees it</text>
 
   <!-- arrows from TARA to outcomes -->
